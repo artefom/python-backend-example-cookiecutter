@@ -1,0 +1,52 @@
+---
+
+app:
+  env:
+    API_ROOT_PATH: "/{{cookiecutter.__project_kebab}}"
+    # Warning: Sentry DSN is unique for each project.
+    # Do not copy-paste this value from other projects
+    SENTRY_DSN: """"
+  
+  # To add secret environment variable use
+  # TEST_ENV_VAR: ref+vault://gitlab/${CI_PROJECT_PATH}/${CI_ENVIRONMENT_NAME}#/TEST_ENV_VAR
+  secretEnv: {}
+
+ingress:
+  enabled: true
+  annotations:
+    ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "Access-Control-Allow-Origin: *";
+  ingressClassName: nginx-new-internal
+  hosts:
+    # The same must be specified in .gitlab-ci.yml as dev url
+    - host: svc.prod.internal.distribusion.com
+      paths:
+        - path: "/{{cookiecutter.__project_kebab}}(/|$)(.*)"
+          type: Prefix
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+metrics:
+  serviceMonitor:
+    enabled: true
+
+persistentVolume:
+  enabled: false

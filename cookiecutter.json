@@ -1,0 +1,8 @@
+{
+    "project_name": null,
+    "__project_kebab": "{{ cookiecutter.project_name.lower().replace(' ', '-').replace('_', '-') }}",
+    "__project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "description": null,
+    "author_full_name": null,
+    "author_email": "{{ cookiecutter.author_full_name.lower().replace(' ', '.') + '@distribusion.com' }}"
+}

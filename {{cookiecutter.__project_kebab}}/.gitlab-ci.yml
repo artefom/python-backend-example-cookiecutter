@@ -1,0 +1,8 @@
+include:
+  - project: 'distribusion/common/gitlab-ci'
+    file: 'python-service-pre-commit.yaml'
+    ref: master
+
+variables:
+  DEV_URL: http://svc.playground.internal.distribusion.com/{{cookiecutter.__project_kebab}}/docs
+  PROD_URL: http://svc.prod.internal.distribusion.com/{{cookiecutter.__project_kebab}}/docs

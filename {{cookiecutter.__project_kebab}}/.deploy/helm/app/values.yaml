@@ -1,0 +1,219 @@
+# Default values for app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+app:
+  port: 8000
+
+  # These key-values are added to deployment yaml config as env variables
+  env: {}
+
+  # These key-values are rendered as kuberentes secrets and mounted as environment variables to pod
+  # Warning!: values ref+vault://.. are not rendered here to actual vault values.
+  #           You can use ref+vault://.. in helm/values/dev.yaml and helm/values/prod.yaml
+  # Warning!: Environment varialbes (${xxx}) are not rendered here to actual values
+  #           You can use environment variables in helm/values/dev.yaml and helm/values/prod.yaml
+  secretEnv: {}
+
+replicaCount: 1
+updateStrategy:
+  type: "RollingUpdate"
+
+image:
+  registry: eu.gcr.io
+  repository: distribusion-next-13
+  name: app
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+secret:
+  annotations: {}
+    # foo: bar
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  ingressClassName: nginx-new-internal
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+metrics:
+  serviceMonitor:
+    ## @param metrics.serviceMonitor.enabled Create ServiceMonitor Resource for scraping metrics using PrometheusOperator, set to true to create a Service Monitor Entry
+    ##
+    enabled: false
+    ## @param metrics.serviceMonitor.namespace The namespace in which the ServiceMonitor will be created
+    ##
+    namespace: ""
+    ## @param metrics.serviceMonitor.interval Interval at which metrics should be scraped
+    ##
+    interval: 30s
+    ## @param metrics.serviceMonitor.scrapeTimeout The timeout after which the scrape is ended
+    ##
+    scrapeTimeout: ""
+    ## @param metrics.serviceMonitor.metricRelabelings Metrics relabelings to add to the scrape endpoint
+    ##
+    metricRelabelings: []
+    ## @param metrics.serviceMonitor.relabelings RelabelConfigs to apply to samples before scraping
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#relabelconfig
+    ##
+    relabelings: []
+    ## @param metrics.serviceMonitor.honorLabels Specify honorLabels parameter to add the scrape endpoint
+    ##
+    honorLabels: false
+    ## @param metrics.serviceMonitor.jobLabel The name of the label on the target service to use as the job name in prometheus.
+    ##
+    jobLabel: ""
+    ## @param metrics.serviceMonitor.selector ServiceMonitor selector labels
+    ## ref: https://github.com/bitnami/charts/tree/main/bitnami/prometheus-operator#prometheus-configuration
+    ##
+    ## selector:
+    ##   prometheus: my-prometheus
+    ##
+    selector: {}
+    ## @param metrics.serviceMonitor.labels Used to pass Labels that are used by the Prometheus installed in your cluster to select Service Monitors to work with
+    ## ref: https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#prometheusspec
+    ##
+    labels: {}
+
+    port: http
+
+persistentVolume:
+  ## If true, will create/use a Persistent Volume Claim
+  ##
+  enabled: false
+
+  ## Persistent Volume access modes
+  ## Must match those of existing PV or dynamic provisioner
+  ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  accessModes:
+    - ReadWriteOnce
+
+  ## Persistent Volume labels
+  ##
+  labels: {}
+
+  ## Persistent Volume annotations
+  ##
+  annotations: {}
+
+  ## Persistent Volume existing claim name
+  ## Requires persistentVolume.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  existingClaim: ""
+
+  ## Persistent Volume mount root path
+  ##
+  mountPath: /data
+
+  ## Persistent Volume size
+  ##
+  size: 1Gi
+
+  ## Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+
+  ## Persistent Volume Binding Mode
+  ## If defined, volumeBindingMode: <volumeBindingMode>
+  ## If undefined (the default) or set to null, no volumeBindingMode spec is
+  ##   set, choosing the default mode.
+  ##
+  # volumeBindingMode: ""
+
+  ## Subdirectory of Persistent Volume to mount
+  ## Useful if the volume's root directory is not empty
+  ##
+  subPath: ""
+
+  ## Persistent Volume Claim Selector
+  ## Useful if Persistent Volumes have been provisioned in advance
+  ## Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
+  ##
+  # selector:
+  #  matchLabels:
+  #    release: "stable"
+  #  matchExpressions:
+  #    - { key: environment, operator: In, values: [ dev ] }
+
+  ## Persistent Volume Name
+  ## Useful if Persistent Volumes have been provisioned in advance and you want to use a specific one
+  ##
+  # volumeName: ""
