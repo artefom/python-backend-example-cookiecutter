@@ -21,8 +21,3 @@ def test_health() -> None:
 def test_index() -> None:
     response = client.get("/")
     assert response.status_code == 200
-
-
-def test_say_hello() -> None:
-    response = client.get("/say_hello", params={"name": "World"})
-    assert response.status_code == 200

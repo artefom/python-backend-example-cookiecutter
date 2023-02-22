@@ -85,5 +85,4 @@ Container image full
 {{- end -}}
 
 {{- end -}}
-
 {% endraw %}

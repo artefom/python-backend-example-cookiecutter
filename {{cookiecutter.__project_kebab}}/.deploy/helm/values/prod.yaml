@@ -5,7 +5,7 @@ app:
     API_ROOT_PATH: "/{{cookiecutter.__project_kebab}}"
     # Warning: Sentry DSN is unique for each project.
     # Do not copy-paste this value from other projects
-    SENTRY_DSN: """"
+    SENTRY_DSN: ""
   
   # To add secret environment variable use
   # TEST_ENV_VAR: ref+vault://gitlab/${CI_PROJECT_PATH}/${CI_ENVIRONMENT_NAME}#/TEST_ENV_VAR

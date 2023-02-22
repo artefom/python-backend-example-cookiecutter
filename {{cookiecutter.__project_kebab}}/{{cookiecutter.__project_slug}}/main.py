@@ -11,8 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from starlette_prometheus import PrometheusMiddleware, metrics
 
-from {{cookiecutter.__project_slug}} import hello
-
 sentry_sdk.init(
     dsn=os.environ.get("SENTRY_DSN"),
     # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance
@@ -26,7 +24,12 @@ app = FastAPI(root_path=os.environ.get("API_ROOT_PATH", "/"))
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8080",
+        "http://localhost:8000",
+        "http://127.0.0.1:8080",
+        "http://127.0.0.1:8000",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -51,12 +54,6 @@ async def index() -> Dict[str, str]:
             f" Test environment variable is: {os.getenv('TEST_ENV_VAR')}"
         )
     }
-
-
-@app.get("/say_hello")  # type: ignore
-async def say_hello(name: str) -> Dict[str, str]:
-    """My method"""
-    return {"message": hello.say_hello(name)}
 
 
 # We need to specify custom openapi to add app.root_path to servers

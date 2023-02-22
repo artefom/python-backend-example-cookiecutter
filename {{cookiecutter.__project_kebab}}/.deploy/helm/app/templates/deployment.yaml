@@ -77,5 +77,4 @@ spec:
           persistentVolumeClaim:
             claimName: {{ if .Values.persistentVolume.existingClaim }}{{ .Values.persistentVolume.existingClaim }}{{- else }}{{ template "app.fullname" . }}{{- end }}
       {{- end }}
-
 {% endraw %}
