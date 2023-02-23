@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+local/
+.DS_Store
+*.ipynb
+
 # Autoenv scripts
 .autoenv.zsh
 .autoenv_leave.zsh
@@ -159,3 +163,5 @@ cython_debug/
 # This must be added to gitignore for now, because it specifies .venv
 # Virtual environment that is not created during lint stage
 pyrightconfig.json
+
+.vscode/
