@@ -1,7 +1,13 @@
 FROM python:3.11-slim-bullseye
 
 WORKDIR /app
+
 RUN pip install --no-input "poetry>=1.2.2<2.0"
+
+# Configure credentials for distribusion pacakge repo
+ARG GITLAB_REGISTRY_USERNAME
+ARG GITLAB_REGISTRY_PASSWORD
+RUN poetry config http-basic.distribusion $GITLAB_REGISTRY_USERNAME $GITLAB_REGISTRY_PASSWORD
 
 # Install packages in a cache-friendly way
 COPY poetry.lock ./

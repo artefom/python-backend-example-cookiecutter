@@ -9,7 +9,8 @@ import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from starlette_prometheus import PrometheusMiddleware, metrics
+from starlette_exporter import handle_metrics
+from starlette_exporter.middleware import PrometheusMiddleware
 
 sentry_sdk.init(
     dsn=os.environ.get("SENTRY_DSN"),
@@ -19,7 +20,9 @@ sentry_sdk.init(
 )
 
 
-app = FastAPI(root_path=os.environ.get("API_ROOT_PATH", "/"))
+ROOT_PATH = os.environ.get("API_ROOT_PATH", "/")
+
+app = FastAPI(root_path=ROOT_PATH)
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,9 +37,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(
+    PrometheusMiddleware,
+    filter_unhandled_paths=True,
+    group_paths=True,
+    app_name="{{cookiecutter.__project_kebab}}",
+    buckets=[0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1.0, 2.5, 5.0, 7.5, 10.0],
+    skip_paths=[
+        f"{ROOT_PATH}{path}"
+        for path in ["/health", "/metrics", "/", "/docs", "/openapi.json"]
+    ],
+)
 
-app.add_middleware(PrometheusMiddleware)
-app.add_route("/metrics", metrics)
+
+app.add_route("/metrics", handle_metrics)
 
 
 # Health check endpoint
