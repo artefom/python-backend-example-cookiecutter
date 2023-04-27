@@ -17,7 +17,10 @@ ingress:
     ingress.kubernetes.io/force-ssl-redirect: "false"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      more_set_headers "Access-Control-Allow-Origin: *";
+      more_set_headers "Access-Control-Allow-Origin: http://localhost:8080";
+      more_set_headers "Access-Control-Allow-Methods: GET, PUT, POST, DELETE, PATCH, OPTIONS";
+      more_set_headers "Access-Control-Allow-Headers: *";
+      more_set_headers "Access-Control-Allow-Credentials: true";
   ingressClassName: nginx-new-internal
   hosts:
     # The same must be specified in .gitlab-ci.yml as dev url
@@ -25,16 +28,6 @@ ingress:
       paths:
         - path: "/{{cookiecutter.__project_kebab}}(/|$)(.*)"
           type: Prefix
-
-livenessProbe:
-  httpGet:
-    path: /health
-    port: http
-
-readinessProbe:
-  httpGet:
-    path: /health
-    port: http
 
 resources:
   limits:

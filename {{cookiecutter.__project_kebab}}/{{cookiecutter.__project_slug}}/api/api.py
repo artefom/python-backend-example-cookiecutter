@@ -1,6 +1,15 @@
-from fastapi import APIRouter
+"""
+API implementation
+"""
+
 import abc
+import logging
+
+from fastapi import APIRouter
+
 from . import spec
+
+logger = logging.getLogger(__name__)
 
 
 class AppState(abc.ABC):
@@ -8,8 +17,9 @@ class AppState(abc.ABC):
     State of the application
     """
 
+    @abc.abstractmethod
     def counter(self) -> int:
-        raise NotImplementedError()
+        ...
 
 
 class DefaultApi(spec.Api):
@@ -24,5 +34,5 @@ class DefaultApi(spec.Api):
         return spec.EchoResponse(text=f"{request}")
 
 
-def router() -> APIRouter:
+def api_router() -> APIRouter:
     return spec.make_router(DefaultApi)

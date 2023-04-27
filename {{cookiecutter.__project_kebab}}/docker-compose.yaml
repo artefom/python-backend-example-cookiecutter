@@ -11,6 +11,11 @@ services:
       # to enable dockers communication with outside world
       network: host
       dockerfile: .deploy/docker/Dockerfile
+      args:
+        # Set GITLAB_REGISTRY_USERNAME and GITLAB_REGISTRY_PASSWORD in your env
+        # They are passed as args to the container build
+        GITLAB_REGISTRY_USERNAME: $GITLAB_REGISTRY_USERNAME
+        GITLAB_REGISTRY_PASSWORD: $GITLAB_REGISTRY_PASSWORD
     ports:
       # DOCKER_COMPOSE_EXTERNAL_PORT can be specified in .env file
       - ${DOCKER_COMPOSE_EXTERNAL_PORT-8000}:8000
@@ -18,9 +23,3 @@ services:
       - ./:/app
     env_file: # Can be replaced with environment: ...
       - .env.example
-    command:
-      - uvicorn
-      - --host
-      - 0.0.0.0
-      - --reload
-      - {{cookiecutter.__project_slug}}.main:app

@@ -1,5 +1,8 @@
 """
 Full API specification
+
+Fully describes API of the application,
+must not depend on any other modules
 """
 
 import abc
@@ -26,7 +29,6 @@ from fastapi.routing import APIRouter
 from pydantic import BaseModel
 from pydantic.generics import GenericModel
 
-
 T = TypeVar("T")
 
 
@@ -47,7 +49,7 @@ async def default_validation_exception_handler(
     _: fastapi.Request, exc: RequestValidationError
 ):
     """
-    Handler for fastapi errors
+    Handler for FastAPI errors
     """
     return fastapi.Response(
         UserError(error=exc.__class__.__name__, detail=str(exc)).json(),
@@ -73,8 +75,7 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
     @wraps(func)
     async def _handle_exceptions(*args: Any, **kwargs: Any):
         try:
-            result = await func(*args, **kwargs)
-            return result
+            return await func(*args, **kwargs)
         except exceptions as exc:
             return fastapi.Response(
                 UserError(error=exc.__class__.__name__, detail=str(exc)).json(),
@@ -104,7 +105,7 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
         ]
     }
 
-    _handle_exceptions.additional_responses = additional_responses
+    _handle_exceptions.additional_responses = additional_responses  # type: ignore
 
     return _handle_exceptions
 
@@ -119,7 +120,7 @@ class EchoError(Exception):
 
 class Api(abc.ABC):
     """
-    Api interface for implementation definition
+    API interface for implementation definition
     """
 
     @staticmethod
@@ -134,8 +135,8 @@ class Api(abc.ABC):
 
 class ApiSection:
     """
-    Helper method for registering methids
-    Registers methods in given router with specificed prefix and tag
+    Helper method for registering methods
+    Registers methods in given router with specified prefix and tag
     """
 
     def __init__(self, router: APIRouter, prefix: str, tag: str):
@@ -154,7 +155,7 @@ class ApiSection:
 
         additional_responses = getattr(endpoint, "additional_responses", None)
 
-        path_with_prefix = self.prefix.rstrip("/") + ("/" if path else "") + path
+        path_with_prefix = f"{self.prefix.rstrip('/')}{'/' if path else ''}{path}"
         self.router.add_api_route(
             path_with_prefix,
             endpoint,
@@ -174,6 +175,7 @@ def make_router(api: type[Api]) -> APIRouter:  # pylint: disable=[R0915,]
     def section(prefix: str, tag: str) -> Generator[ApiSection, None, None]:
         yield ApiSection(router, prefix, tag)
 
+    # Add new API routes here
     with section("/echo", "echo") as sec:
         sec.register("GET", "", api.echo, EchoError)
 

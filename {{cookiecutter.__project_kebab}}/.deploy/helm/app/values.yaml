@@ -75,13 +75,36 @@ ingress:
 
 livenessProbe:
   httpGet:
-    path: /
+    path: /health
     port: http
+  # 30 seconds * 10 = 5 minutes
+  # pod should be unresponsive 5 minutes
+  # for it to restart
+  # This is done to prevent cascade failure due to overload
+  failureThreshold: 10
+  periodSeconds: 30
+  timeoutSeconds: 10 # Server can be under load
 
-readinessProbe:
+readinessProbe: {}
+
+startupProbe:
   httpGet:
-    path: /
+    path: /health
     port: http
+  # 5 seconds * 30 = 2.5 minutes total startup timeout
+  # We use startup probe instead of readiness probe
+  # Because contrary to startup probe,
+  # readiness probe can shutdown traffic routing
+  # to the pod during it's whole lifetime
+  #
+  # This can lead to cascade failre do to overload
+  # One pod overloads -> readiness probe fails
+  # -> Traffic is redirected to other pods
+  # They also fail
+  # Everything failed
+  failureThreshold: 30
+  periodSeconds: 5
+  timeoutSeconds: 1
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

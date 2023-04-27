@@ -43,6 +43,10 @@ helm.sh/chart: {{ include "app.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- if .Values.distribusion }}
+distribusion.com/project: {{ default "common" .Values.distribusion.projectName | quote }}
+distribusion.com/team: {{ default "unknown" .Values.distribusion.team | quote }}
+{{- end }}
 {{- end }}
 
 {{/*

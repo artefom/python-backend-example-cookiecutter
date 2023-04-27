@@ -5,12 +5,12 @@ import os
 
 from fastapi.testclient import TestClient
 
-from {{cookiecutter.__project_slug}}.main import app
+from {{cookiecutter.__project_slug}}.main import make_app
 
 os.environ["TEST_ENV_VAR"] = "123"
 
 
-client = TestClient(app)
+client = TestClient(make_app())
 
 
 def test_health() -> None:

@@ -18,6 +18,7 @@ fastapi = "^0.92.0"
 pyyaml = "^6.0"
 sentry-sdk = "^1.12.1"
 starlette-exporter = "^0.15.1"
+uvloop = "^0.17.0"
 
 
 [tool.poetry.group.test]
@@ -38,6 +39,13 @@ optional = true
 [tool.poetry.group.lint.dependencies]
 pyright = "^1.1.294"
 pylint = "^2.16.2"
+
+
+[[tool.poetry.source]]
+name = "distribusion"
+url = "https://gitlab.com/api/v4/groups/15793688/-/packages/pypi/simple"
+default = false
+secondary = true
 
 
 [tool.isort]
