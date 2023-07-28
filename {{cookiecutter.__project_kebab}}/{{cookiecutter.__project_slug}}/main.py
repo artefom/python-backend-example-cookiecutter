@@ -21,7 +21,6 @@ from {{cookiecutter.__project_slug}}.api import api_router
 
 logger = logging.getLogger(__name__)
 
-
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -29,16 +28,25 @@ LOGGING_CONFIG = {
         "standard": {
             "format": "%(asctime)s %(levelname)-8s| %(message)s",
             "datefmt": "%H:%M:%S",
-        }
+        },
+        "json": {
+            "()": "{{cookiecutter.__project_slug}}.slog.GcpStructuredFormatter",
+        },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "standard",
-            "stream": "ext://sys.stdout",
-        }
+            "formatter": os.environ.get("LOG_FORMATTER", "standard"),
+            "level": "INFO",
+        },
     },
-    "root": {"level": "INFO", "handlers": ["console"], "propagate": "no"},
+    "loggers": {
+        "uvicorn": {"level": "WARNING"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
 }
 
 
@@ -110,15 +118,11 @@ def make_app():
     return app
 
 
-async def _main_async():
+async def _main_async(host: str = "0.0.0.0", port: int = 8000):
     app = make_app()
-    config = uvicorn.Config(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        log_config=None,
-    )
+    config = uvicorn.Config(app, host, port, log_config=None)
     api_server = uvicorn.Server(config)
+    logging.info("Serving on http://%s:%s", host, port)
     await api_server.serve()
 
 
