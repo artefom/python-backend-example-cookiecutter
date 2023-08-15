@@ -18,6 +18,7 @@ from starlette_exporter import handle_metrics
 from starlette_exporter.middleware import PrometheusMiddleware
 
 from {{cookiecutter.__project_slug}}.api import api_router
+from {{cookiecutter.__project_slug}}.tracking import TrackingMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,8 @@ def make_app():
             for path in ["/health", "/metrics", "/", "/docs", "/openapi.json"]
         ],
     )
+    # Enable context based tracking
+    app.add_middleware(TrackingMiddleware)
 
     app.add_route("/metrics", handle_metrics)
 
@@ -120,7 +123,7 @@ def make_app():
 
 async def _main_async(host: str = "0.0.0.0", port: int = 8000):
     app = make_app()
-    config = uvicorn.Config(app, host, port, log_config=None)
+    config = uvicorn.Config(app, host, port, log_config=None, access_log=False)
     api_server = uvicorn.Server(config)
     logging.info("Serving on http://%s:%s", host, port)
     await api_server.serve()

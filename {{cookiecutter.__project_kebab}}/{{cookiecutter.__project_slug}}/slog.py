@@ -71,6 +71,7 @@ RESERVED = {
     "threadName",
     "processName",
     "process",
+    "httpRequest",
 }
 
 
@@ -105,6 +106,9 @@ class GcpStructuredFormatter(logging.Formatter):
             "time": _local_timestamp_to_utc(record.created),
             "logging.googleapis.com/labels": self._format_labels(record),
         }
+
+        if http_request := getattr(record, "httpRequest", None):
+            payload["httpRequest"] = http_request
 
         if exc_info := record.exc_info:
             payload["traceback"] = "".join(traceback.format_exception(*exc_info))
