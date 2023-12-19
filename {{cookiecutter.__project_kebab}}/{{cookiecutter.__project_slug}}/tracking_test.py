@@ -9,6 +9,8 @@ import pytest
 from starlette.requests import Request
 from starlette.responses import Response
 
+from {{cookiecutter.__project_slug}}.conftest import JsonLogs
+
 from .slog import logging_context
 from .tracking import RequestView, ResponseView, TrackingMiddleware
 
@@ -59,7 +61,7 @@ def test_response_view(f_response: Response):  # pylint: disable=W0621
 async def test_tracking_middleware(
     f_request: Request,  # pylint: disable=W0621
     f_response: Response,  # pylint: disable=W0621
-    structured_logs_capture,
+    structured_logs_capture: JsonLogs,
 ):
     async def api_call(request: Request):  # pylint: disable=W0613
         with logging_context(b=20):

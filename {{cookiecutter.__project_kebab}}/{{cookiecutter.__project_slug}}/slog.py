@@ -72,6 +72,7 @@ RESERVED = {
     "processName",
     "process",
     "httpRequest",
+    "taskName",
 }
 
 

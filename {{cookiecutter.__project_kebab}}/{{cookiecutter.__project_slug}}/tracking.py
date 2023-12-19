@@ -29,7 +29,7 @@ class RequestView:
 
     @property
     def url_path(self) -> str:
-        return uviutils.get_path_with_query_string(self.request.scope)
+        return uviutils.get_path_with_query_string(self.request.scope)  # type: ignore
 
     @property
     def method(self) -> str:

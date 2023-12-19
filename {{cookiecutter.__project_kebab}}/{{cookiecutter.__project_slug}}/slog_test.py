@@ -9,6 +9,8 @@ from unittest.mock import ANY
 
 import pytest
 
+from {{cookiecutter.__project_slug}}.conftest import JsonLogs
+
 from .slog import logging_context
 
 logger = logging.getLogger("test_logger")
@@ -31,7 +33,7 @@ def freeze_uuid(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.mark.usefixtures("freeze_uuid", "freeze_time")
-def test_structured_info(structured_logs_capture):
+def test_structured_info(structured_logs_capture: JsonLogs):
     logger.info("test info")
     assert structured_logs_capture.parse() == [
         {
@@ -44,7 +46,7 @@ def test_structured_info(structured_logs_capture):
 
 
 @pytest.mark.usefixtures("freeze_uuid", "freeze_time")
-def test_structured_warning(structured_logs_capture):
+def test_structured_warning(structured_logs_capture: JsonLogs):
     logger.warning("test warning")
     assert structured_logs_capture.parse() == [
         {
@@ -57,7 +59,7 @@ def test_structured_warning(structured_logs_capture):
 
 
 @pytest.mark.usefixtures("freeze_uuid", "freeze_time")
-def test_structured_error(structured_logs_capture):
+def test_structured_error(structured_logs_capture: JsonLogs):
     try:
         raise ValueError()
     except ValueError:
@@ -75,7 +77,7 @@ def test_structured_error(structured_logs_capture):
 
 
 @pytest.mark.usefixtures("freeze_uuid", "freeze_time")
-def test_structured_info_parametrized(structured_logs_capture):
+def test_structured_info_parametrized(structured_logs_capture: JsonLogs):
     logger.info("test extra", extra={"foo": "bar"})
     logger.info("test args: %s: %s", "foo", "bar")
 
@@ -100,7 +102,7 @@ def test_structured_info_parametrized(structured_logs_capture):
 
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("freeze_uuid", "freeze_time")
-async def test_structured_info_context(structured_logs_capture):
+async def test_structured_info_context(structured_logs_capture: JsonLogs):
     async def task1():
         with logging_context(task_name="task1", a=20):
             await asyncio.sleep(0)
@@ -153,7 +155,7 @@ async def test_structured_info_context(structured_logs_capture):
 
 
 @pytest.mark.usefixtures("freeze_uuid", "freeze_time")
-def test_structured_info_http(structured_logs_capture):
+def test_structured_info_http(structured_logs_capture: JsonLogs):
     logger.info(
         "test http request",
         extra={

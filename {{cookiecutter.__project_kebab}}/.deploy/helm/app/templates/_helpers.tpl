@@ -58,6 +58,17 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Pod labels
+*/}}
+{{- define "app.podLabels" -}}
+{{ include "app.selectorLabels" . }}
+{{- if .Values.distribusion }}
+distribusion.com/project: {{ default "common" .Values.distribusion.projectName | quote }}
+distribusion.com/team: {{ default "unknown" .Values.distribusion.team | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "app.serviceAccountName" -}}

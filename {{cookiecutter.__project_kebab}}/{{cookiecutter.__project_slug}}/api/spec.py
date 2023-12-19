@@ -27,7 +27,6 @@ import fastapi
 from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRouter
 from pydantic import BaseModel
-from pydantic.generics import GenericModel
 
 T = TypeVar("T")
 
@@ -35,7 +34,7 @@ T = TypeVar("T")
 ErrorVariants = TypeVar("ErrorVariants")
 
 
-class UserError(GenericModel, Generic[ErrorVariants]):
+class UserError(BaseModel, Generic[ErrorVariants]):
     """
     Error model for all user errors.
     Provides reason of error and details

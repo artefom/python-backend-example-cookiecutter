@@ -87,12 +87,12 @@ def make_app():
     app.add_route("/metrics", handle_metrics)
 
     # Health check endpoint
-    @app.get("/health", tags=["health"])  # type: ignore
+    @app.get("/health", include_in_schema=False)
     async def health() -> str:
         """Checks health of application, including database and all systems"""
         return "OK"
 
-    @app.get("/")
+    @app.get("/", include_in_schema=False)
     async def index(request: Request) -> RedirectResponse:
         # the redirect must be absolute (start with /) because
         # it needs to handle both trailing slash and no trailing slash

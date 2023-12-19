@@ -1,8 +1,8 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.12-slim-bullseye
 
 WORKDIR /app
 
-RUN pip install --no-input "poetry==1.3.2"
+RUN pip install --no-input "poetry==1.7.1"
 
 # Install packages in a cache-friendly way
 COPY poetry.lock ./
