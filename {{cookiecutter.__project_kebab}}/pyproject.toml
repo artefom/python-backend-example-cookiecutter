@@ -1,5 +1,5 @@
 [build-system]
-requires = ["poetry-core>=1.7.1"]
+requires = ["poetry-core>=1.8.2", "packaging"]
 build-backend = "poetry.core.masonry.api"
 
 
@@ -14,12 +14,12 @@ authors = ["{{cookiecutter.author_full_name}} <{{cookiecutter.author_email}}>"]
 # Server deps
 python = "^3.12"
 uvloop = "^0.19.0"
-uvicorn = "^0.24.0"
-fastapi = "^0.105.0"
-pydantic = "^2.5.2"
+uvicorn = "^0.27.1"
+fastapi = "^0.110.0"
+pydantic = "^2.6.3"
 pyyaml = "^6.0.1"
-sentry-sdk = "^1.39.1"
-starlette-exporter = "^0.17.1"
+sentry-sdk = "^1.41.0"
+starlette-exporter = "^0.21.0"
 
 
 

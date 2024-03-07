@@ -2,7 +2,7 @@ FROM python:3.12-slim-bullseye
 
 WORKDIR /app
 
-RUN pip install --no-input "poetry==1.7.1"
+RUN pip install --no-input "poetry==1.8.2"
 
 # Install packages in a cache-friendly way
 COPY poetry.lock ./
@@ -22,6 +22,8 @@ COPY ./{{cookiecutter.__project_slug}} ./{{cookiecutter.__project_slug}}
 RUN pip install --no-deps .
 
 # Run application
-# Use run by file name because otherwise sigterm on docker shutdown
-# is not propagated to the python application and cannot be handled
-CMD python {{cookiecutter.__project_slug}}/main.py
+# Use entrypoint and 'cmd' so that SIGTERM and other signals are propagated.
+#
+# When using entrypoint script use 'exec <command>' to propagate signals
+ENTRYPOINT [ "python" ]
+CMD ["{{cookiecutter.__project_slug}}/main.py"]

@@ -57,7 +57,7 @@ async def default_validation_exception_handler(
     )
 
 
-def _create_error_enum(name: str, errors: List[Type[Exception]]):
+def _create_error_enum(name: str, errors: List[Type[Exception]]) -> enum.Enum:
     variants = dict()
     for error in errors:
         error_type = error.__name__
@@ -94,13 +94,17 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
     for status_code, errors in errors_by_status_code.items():
         additional_responses[status_code] = {
             "model": UserError[
-                _create_error_enum(f"{func.__name__}{status_code}", errors)
+                _create_error_enum(  # type: ignore
+                    f"{func.__name__}{status_code}", errors
+                )
             ]
         }
 
     additional_responses[422] = {
         "model": UserError[
-            _create_error_enum(f"{func.__name__}422", [RequestValidationError])
+            _create_error_enum(  # type: ignore
+                f"{func.__name__}422", [RequestValidationError]
+            )
         ]
     }
 
@@ -122,9 +126,8 @@ class Api(abc.ABC):
     API interface for implementation definition
     """
 
-    @staticmethod
     @abstractmethod
-    async def echo(request: str) -> EchoResponse:
+    async def echo(self, request: str) -> EchoResponse:
         """
         Echo what user inputs.
         Raises error if request = 'error'
@@ -167,7 +170,7 @@ class ApiSection:
         )
 
 
-def make_router(api: type[Api]) -> APIRouter:  # pylint: disable=[R0915,]
+def make_router(api: Api) -> APIRouter:  # pylint: disable=[R0915,]
     router = APIRouter()
 
     @contextmanager
