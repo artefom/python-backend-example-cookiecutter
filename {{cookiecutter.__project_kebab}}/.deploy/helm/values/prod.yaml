@@ -7,6 +7,7 @@ app:
     # Do not copy-paste this value from other projects
     SENTRY_DSN: ""
     LOG_FORMATTER: "json"
+    SENTRY_ENVIRONMENT: "production"
   
   # To add secret environment variable use
   # TEST_ENV_VAR: ref+vault://gitlab/${CI_PROJECT_PATH}/${CI_ENVIRONMENT_NAME}#/TEST_ENV_VAR
