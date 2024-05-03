@@ -8,6 +8,7 @@ must not depend on any other modules
 import abc
 import enum
 import inspect
+import logging
 from abc import abstractmethod
 from contextlib import contextmanager
 from functools import wraps
@@ -22,11 +23,14 @@ from typing import (
     TypeVar,
     get_type_hints,
 )
+from uuid import uuid4
 
 import fastapi
 from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRouter
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
@@ -80,6 +84,23 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
                 UserError(error=exc.__class__.__name__, detail=str(exc)).json(),
                 headers={"Content-Type": "application/json"},
                 status_code=getattr(exc, "status_code"),
+            )
+        # Manually handle here internal server errors
+        # Handling the error this way gives more concise stack trace
+        # and also allows middleware such as CORS to correctly add headers
+        # to the response
+        except Exception:  # pylint: disable=broad-exception-caught
+            error_uuid = str(uuid4())
+
+            logger.exception("Unhandled exception occurred. Id %s", error_uuid)
+
+            return fastapi.Response(
+                UserError(
+                    error="Internal server error",
+                    detail=f"Find details in logs by this id: {error_uuid}",
+                ).json(),
+                headers={"Content-Type": "application/json"},
+                status_code=500,
             )
 
     errors_by_status_code = dict()
