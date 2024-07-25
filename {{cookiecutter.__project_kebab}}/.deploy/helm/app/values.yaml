@@ -20,8 +20,8 @@ updateStrategy:
   type: "RollingUpdate"
 
 image:
-  registry: eu.gcr.io
-  repository: distribusion-next-13
+  registry: europe-docker.pkg.dev
+  repository: distribusion-next-13/common
   name: app
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
