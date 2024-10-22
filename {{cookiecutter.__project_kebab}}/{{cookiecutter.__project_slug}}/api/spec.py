@@ -55,13 +55,13 @@ async def default_validation_exception_handler(
     Handler for FastAPI errors
     """
     return fastapi.Response(
-        UserError(error=exc.__class__.__name__, detail=str(exc)).json(),
+        UserError(error=exc.__class__.__name__, detail=str(exc)).model_dump_json(),
         headers={"Content-Type": "application/json"},
         status_code=422,
     )
 
 
-def _create_error_enum(name: str, errors: List[Type[Exception]]) -> enum.Enum:
+def _create_error_enum(name: str, errors: List[Type[Exception]]):
     variants = dict()
     for error in errors:
         error_type = error.__name__
@@ -81,7 +81,9 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
             return await func(*args, **kwargs)
         except exceptions as exc:
             return fastapi.Response(
-                UserError(error=exc.__class__.__name__, detail=str(exc)).json(),
+                UserError(
+                    error=exc.__class__.__name__, detail=str(exc)
+                ).model_dump_json(),
                 headers={"Content-Type": "application/json"},
                 status_code=getattr(exc, "status_code"),
             )
@@ -98,7 +100,7 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
                 UserError(
                     error="Internal server error",
                     detail=f"Find details in logs by this id: {error_uuid}",
-                ).json(),
+                ).model_dump_json(),
                 headers={"Content-Type": "application/json"},
                 status_code=500,
             )
@@ -168,12 +170,19 @@ class ApiSection:
         self.tag = tag
 
     def register(
-        self, method: str, path: str, endpoint: Any, *exceptions: Type[Exception]
+        self,
+        method: str,
+        path: str,
+        endpoint: Any,
+        *exceptions: Type[Exception],
+        deprecated: bool = False,
     ):
         endpoint = expect_exceptions(endpoint, exceptions)
         response_model = get_type_hints(endpoint)["return"]
 
-        if response_model == fastapi.Response:
+        if isinstance(response_model, type) and issubclass(
+            response_model, fastapi.Response
+        ):
             response_model = None
 
         additional_responses = getattr(endpoint, "additional_responses", None)
@@ -188,10 +197,11 @@ class ApiSection:
             summary=inspect.getdoc(endpoint),
             description=None,
             responses=additional_responses,
+            deprecated=deprecated,
         )
 
 
-def make_router(api: Api) -> APIRouter:  # pylint: disable=[R0915,]
+def make_router(api: Api) -> APIRouter:
     router = APIRouter()
 
     @contextmanager
@@ -203,3 +213,10 @@ def make_router(api: Api) -> APIRouter:  # pylint: disable=[R0915,]
         sec.register("GET", "", api.echo, EchoError)
 
     return router
+
+
+def register_default_exception_handler(app: fastapi.FastAPI):
+    app.add_exception_handler(
+        RequestValidationError,
+        default_validation_exception_handler,  # type: ignore
+    )

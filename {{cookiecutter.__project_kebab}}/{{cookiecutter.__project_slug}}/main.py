@@ -18,6 +18,7 @@ from starlette_exporter import handle_metrics
 from starlette_exporter.middleware import PrometheusMiddleware
 
 from {{cookiecutter.__project_slug}}.api import api_router
+from {{cookiecutter.__project_slug}}.api.spec import register_default_exception_handler
 from {{cookiecutter.__project_slug}}.tracking import TrackingMiddleware
 
 logger = logging.getLogger(__name__)
@@ -58,6 +59,8 @@ def make_app(root_path: str) -> FastAPI:
     app.add_api_route("/", index, methods=["get"], include_in_schema=False)
 
     app.include_router(api_router())
+
+    register_default_exception_handler(app)
 
     # We need to specify custom OpenAPI to add app.root_path to servers
     def custom_openapi() -> Any:
