@@ -21,9 +21,9 @@ COPY ./{{cookiecutter.__project_slug}} ./{{cookiecutter.__project_slug}}
 # Install package
 RUN pip install --no-deps .
 
-# Run application
-# Use entrypoint and 'cmd' so that SIGTERM and other signals are propagated.
+# This webserver.sh is configured to run in the deployment.yaml
 #
-# When using entrypoint script use 'exec <command>' to propagate signals
-ENTRYPOINT [ "python" ]
-CMD ["{{cookiecutter.__project_slug}}/main.py"]
+# If needed, feel free to add more entrypoints and configure them
+# to be executed in different cronjobs/deployments/stateful sets/ etc...
+COPY .deploy/docker/webserver.sh /webserver.sh
+RUN chmod +x /webserver.sh

@@ -1,23 +1,18 @@
 """
 Example unit tests file
 """
-import os
 
-from fastapi.testclient import TestClient
-
-from {{cookiecutter.__project_slug}}.main import make_app
-
-os.environ["TEST_ENV_VAR"] = "123"
+import pytest
+from httpx import AsyncClient
 
 
-client = TestClient(make_app())
-
-
-def test_health() -> None:
-    response = client.get("/health")
+@pytest.mark.asyncio
+async def test_health(client: AsyncClient) -> None:
+    response = await client.get("/health")
     assert response.status_code == 200
 
 
-def test_index() -> None:
-    response = client.get("/")
+@pytest.mark.asyncio
+async def test_index(client: AsyncClient) -> None:
+    response = await client.get("/docs")
     assert response.status_code == 200

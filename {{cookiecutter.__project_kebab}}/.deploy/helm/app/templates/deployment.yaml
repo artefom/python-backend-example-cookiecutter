@@ -32,6 +32,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
+          command: ["/webserver.sh"]
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ include "app.containerImage" . }}

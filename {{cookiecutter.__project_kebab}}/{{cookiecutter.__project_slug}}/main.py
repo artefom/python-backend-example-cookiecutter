@@ -5,10 +5,10 @@ Server entry-point with FastAPI app defined
 import asyncio
 import logging
 import logging.config
-import os
+from dataclasses import dataclass
 from typing import Any
 
-import sentry_sdk
+import fastapi
 import uvicorn
 import uvloop
 from fastapi import FastAPI, Request
@@ -22,38 +22,8 @@ from {{cookiecutter.__project_slug}}.tracking import TrackingMiddleware
 
 logger = logging.getLogger(__name__)
 
-LOGGING_CONFIG = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "standard": {
-            "format": "%(asctime)s %(levelname)-8s| %(message)s",
-            "datefmt": "%H:%M:%S",
-        },
-        "json": {
-            "()": "{{cookiecutter.__project_slug}}.slog.GcpStructuredFormatter",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": os.environ.get("LOG_FORMATTER", "standard"),
-            "level": "INFO",
-        },
-    },
-    "loggers": {
-        "uvicorn": {"level": "WARNING"},
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
-}
 
-
-def make_app():
-    root_path = os.environ.get("API_ROOT_PATH", "")
-
+def make_app(root_path: str) -> FastAPI:
     app = FastAPI(root_path=root_path)
 
     app.add_middleware(
@@ -61,21 +31,8 @@ def make_app():
         filter_unhandled_paths=True,
         group_paths=True,
         app_name="{{cookiecutter.__project_kebab}}",
-        buckets=[
-            0.01,
-            0.025,
-            0.05,
-            0.075,
-            0.1,
-            0.25,
-            0.5,
-            0.75,
-            1.0,
-            2.5,
-            5.0,
-            7.5,
-            10.0,
-        ],
+        buckets=[0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5]
+        + [0.75, 1.0, 2.5, 5.0, 7.5, 10.0],
         skip_paths=[
             f"{root_path}{path}"
             for path in ["/health", "/metrics", "/", "/docs", "/openapi.json"]
@@ -86,19 +43,19 @@ def make_app():
 
     app.add_route("/metrics", handle_metrics)
 
-    # Health check endpoint
-    @app.get("/health", include_in_schema=False)
-    async def health() -> str:
+    async def health() -> fastapi.Response:
         """Checks health of application, including database and all systems"""
-        return "OK"
+        return fastapi.Response("OK")
 
-    @app.get("/", include_in_schema=False)
     async def index(request: Request) -> RedirectResponse:
         # the redirect must be absolute (start with /) because
         # it needs to handle both trailing slash and no trailing slash
         # /app -> /app/docs
         # /app/ -> /app/docs
         return RedirectResponse(f"{str(request.base_url).rstrip('/')}/docs")
+
+    app.add_api_route("/health", health, methods=["get"], include_in_schema=False)
+    app.add_api_route("/", index, methods=["get"], include_in_schema=False)
 
     app.include_router(api_router())
 
@@ -121,29 +78,27 @@ def make_app():
     return app
 
 
-async def _main_async(host: str = "0.0.0.0", port: int = 8000):
-    app = make_app()
-    config = uvicorn.Config(app, host, port, log_config=None, access_log=False)
+@dataclass
+class AppSettings:
+    host: str
+    port: int
+    root_path: str
+
+
+async def _main_async(settings: AppSettings):
+    app = make_app(settings.root_path)
+    config = uvicorn.Config(
+        app,
+        settings.host,
+        settings.port,
+        log_config=None,
+        access_log=False,
+    )
     api_server = uvicorn.Server(config)
-    logging.info("Serving on http://%s:%s", host, port)
+    logging.info("Serving on http://%s:%s", settings.host, settings.port)
     await api_server.serve()
 
 
-def main():
-    sentry_sdk.init(
-        dsn=os.environ.get("SENTRY_DSN"),
-        environment=os.environ.get("SENTRY_ENVIRONMENT"),
-        enable_tracing=False,
-    )
-
-    # Configure logging
-    logging.config.dictConfig(LOGGING_CONFIG)
+def main(settings: AppSettings):
     uvloop.install()
-    asyncio.run(_main_async())
-
-
-# Main entry-point of the application
-# Feel free to add command-line interface, connection to database,
-# initialize global variables, run background tasks, etc..
-if __name__ == "__main__":
-    main()
+    asyncio.run(_main_async(settings))
