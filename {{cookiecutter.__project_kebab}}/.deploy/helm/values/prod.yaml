@@ -44,3 +44,21 @@ metrics:
 
 persistentVolume:
   enabled: false
+
+
+# Deploy to {{cookiecutter.team_name}} cluster
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: nodepool
+              operator: In
+              values:
+                - {{cookiecutter.team_name}}-standard
+
+tolerations:
+  - key: {{cookiecutter.team_name}}-standard
+    operator: Equal
+    value: "true"
+    effect: NoSchedule

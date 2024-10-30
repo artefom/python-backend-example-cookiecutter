@@ -7,3 +7,4 @@ variables:
   DEV_URL: http://svc.playground.internal.distribusion.com/{{cookiecutter.__project_kebab}}/docs
   PROD_URL: http://svc.prod.internal.distribusion.com/{{cookiecutter.__project_kebab}}/docs
   DT_PROJECT_TEAM: {{cookiecutter.team_name}}
+  USE_PROJECT_NAME_AS_NAMESPACE: false

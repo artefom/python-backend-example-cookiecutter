@@ -19,9 +19,9 @@ logger = logging.getLogger("test_logger")
 @pytest.fixture()
 def freeze_time(monkeypatch: pytest.MonkeyPatch):
     def mock_time() -> float:
-        return 1689083906.744488
+        return 1689083906744488000
 
-    monkeypatch.setattr(time, "time", mock_time)
+    monkeypatch.setattr(time, "time_ns", mock_time)
 
 
 @pytest.fixture()
