@@ -6,7 +6,6 @@ import asyncio
 import logging
 import logging.config
 from dataclasses import dataclass
-from typing import Any
 
 import fastapi
 import uvicorn
@@ -62,21 +61,13 @@ def make_app(root_path: str) -> FastAPI:
 
     register_default_exception_handler(app)
 
-    # We need to specify custom OpenAPI to add app.root_path to servers
-    def custom_openapi() -> Any:
-        if app.openapi_schema:
-            return app.openapi_schema
-        openapi_schema = get_openapi(
-            title="{{cookiecutter.project_name}}",
-            version="0.1.0",
-            description="{{cookiecutter.description}}",
-            routes=app.routes,
-        )
-        openapi_schema["servers"] = [{"url": app.root_path}]
-        app.openapi_schema = openapi_schema
-        return app.openapi_schema
-
-    app.openapi = custom_openapi  # noqa
+    app.openapi_schema = get_openapi(
+        title="{{cookiecutter.project_name}}",
+        version="0.1.0",
+        description="{{cookiecutter.description}}",
+        routes=app.routes,
+    )
+    app.openapi_schema["servers"] = [{"url": app.root_path}]
 
     return app
 
