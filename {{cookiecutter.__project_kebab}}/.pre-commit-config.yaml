@@ -1,36 +1,28 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: "v4.4.0"
-    hooks:
-      - id: check-yaml
-        exclude: ^\.deploy/helm/app/templates/.*\.(yml|yaml)
-      - id: end-of-file-fixer
-      - id: trailing-whitespace
-  - repo: https://github.com/psf/black
-    rev: "26.3.1"
-    hooks:
-      - id: black
-  - repo: https://github.com/pycqa/isort
-    rev: "5.12.0"
-    hooks:
-      - id: isort
-        name: isort (python)
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        files: ^{{cookiecutter.__project_slug}}/
-        args: [
-            "-rn", # Only display messages
-            "-sn", # Don't display the score
-          ]
-      - id: pyright
-        name: pyright
-        entry: pyright
-        language: system
-        files: ^{{cookiecutter.__project_slug}}/
-        require_serial: true
-        types: [python]
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: 'v4.3.0'
+  hooks:
+  - id: check-yaml
+    exclude: ^\.deploy/helm/app/templates/.*\.(yml|yaml)
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+- repo: local
+  hooks:
+    - id: ruff check
+      name: ruff check
+      entry: ruff check --fix
+      language: system  # the language of the hook - tells pre-commit how to install the hook.
+      pass_filenames: false
+      types: [python]
+    - id: ruff format
+      name: ruff format
+      entry: ruff format
+      language: system  # the language of the hook - tells pre-commit how to install the hook.
+      pass_filenames: false
+      types: [python]
+    - id: pyright
+      name: pyright
+      entry: python -m pyright
+      language: system  # the language of the hook - tells pre-commit how to install the hook.
+      pass_filenames: false
+      types: [python]

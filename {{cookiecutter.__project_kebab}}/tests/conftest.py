@@ -5,7 +5,6 @@ Example unit tests file
 # The link to the testing practices
 # https://fastapi.tiangolo.com/advanced/async-tests/#example
 
-
 from typing import AsyncGenerator
 
 import httpx
