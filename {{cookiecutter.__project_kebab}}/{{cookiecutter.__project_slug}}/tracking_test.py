@@ -42,7 +42,7 @@ def f_response() -> Response:
     return Response(headers={"Content-Length": "10"})
 
 
-def test_request_view(f_request: Request):  # pylint: disable=W0621
+def test_request_view(f_request: Request):
     view = RequestView(f_request)
     assert view.client_addr == "10.1.1.10:10"
     assert view.url_path == "/v1/path"
@@ -53,18 +53,18 @@ def test_request_view(f_request: Request):  # pylint: disable=W0621
     assert view.user_agent == "agent"
 
 
-def test_response_view(f_response: Response):  # pylint: disable=W0621
+def test_response_view(f_response: Response):
     view = ResponseView(f_response)
     assert view.content_length == 10
 
 
 @pytest.mark.asyncio
 async def test_tracking_middleware(
-    f_request: Request,  # pylint: disable=W0621
-    f_response: Response,  # pylint: disable=W0621
+    f_request: Request,
+    f_response: Response,
     structured_logs_capture: JsonLogs,
 ):
-    async def api_call(request: Request):  # pylint: disable=W0613
+    async def api_call(request: Request):
         with logging_context(b=20):
             logger.info("slow api call")
             await asyncio.sleep(0.2)
@@ -81,7 +81,7 @@ async def test_tracking_middleware(
             "logging.googleapis.com/labels": {
                 "logger": "{{cookiecutter.__project_slug}}.tracking_test",
                 "request_id": "abc",
-                "b": 20,
+                "b": "20",
             },
         },
         {

@@ -118,6 +118,10 @@ async def test_structured_info_context(structured_logs_capture: JsonLogs):
         await asyncio.gather(task1(), task2())
         logger.info("End tasks", extra={"a": 0, "b": 5})
 
+    assert (
+        structured_logs_capture.parse()[0]["logging.googleapis.com/labels"]["a"] == "30"
+    )
+
     assert structured_logs_capture.parse() == [
         {
             "severity": "INFO",
@@ -127,7 +131,7 @@ async def test_structured_info_context(structured_logs_capture: JsonLogs):
                 "logger": "test_logger",
                 "parent": "foo",
                 "task_name": "task2",
-                "a": 30,
+                "a": "30",
             },
         },
         {
@@ -138,7 +142,7 @@ async def test_structured_info_context(structured_logs_capture: JsonLogs):
                 "logger": "test_logger",
                 "parent": "foo",
                 "task_name": "task1",
-                "a": 20,
+                "a": "20",
             },
         },
         {
@@ -148,8 +152,8 @@ async def test_structured_info_context(structured_logs_capture: JsonLogs):
             "logging.googleapis.com/labels": {
                 "logger": "test_logger",
                 "parent": "foo",
-                "a": 0,
-                "b": 5,
+                "a": "0",
+                "b": "5",
             },
         },
     ]

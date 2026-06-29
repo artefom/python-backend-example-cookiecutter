@@ -91,7 +91,7 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
         # Handling the error this way gives more concise stack trace
         # and also allows middleware such as CORS to correctly add headers
         # to the response
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             error_uuid = str(uuid4())
 
             logger.exception("Unhandled exception occurred. Id %s", error_uuid)

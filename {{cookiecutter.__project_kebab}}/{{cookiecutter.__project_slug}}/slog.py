@@ -116,12 +116,13 @@ class GcpStructuredFormatter(logging.Formatter):
         return json.dumps(payload)
 
     def _format_labels(self, record: logging.LogRecord) -> dict[str, Any]:
-        if ctx_labels := CONTEXT_LABELS.get():
-            labels = ctx_labels.copy()
-        else:
-            labels = dict()
+        labels = {"logger": record.name}
 
-        labels["logger"] = record.name
+        if ctx_labels := CONTEXT_LABELS.get():
+            for key, value in ctx_labels.items():
+                # if value is not of type 'string' it will be dropped by google cloud
+                if value is not None and key not in RESERVED:
+                    labels[key] = str(value)
 
         for key, value in record.__dict__.items():
             if value is not None and key not in RESERVED:

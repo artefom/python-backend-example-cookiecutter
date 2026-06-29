@@ -5,7 +5,6 @@ The entry-point of the application and the way to pass arguments
 """
 
 # We import inside functions to achieve better performance of `--help` function
-# pylint: disable=[C0415]
 
 import logging
 import logging.config
