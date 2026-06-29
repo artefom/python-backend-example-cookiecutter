@@ -1,4 +1,3 @@
-version: '3.5'
 services:
 
   app:
@@ -19,6 +18,7 @@ services:
     ports:
       # DOCKER_COMPOSE_EXTERNAL_PORT can be specified in .env file
       - ${DOCKER_COMPOSE_EXTERNAL_PORT-8000}:8000
+    command: uvicorn --factory {{cookiecutter.__project_slug}}.main:make_app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./:/app
     env_file: # Can be replaced with environment: ...

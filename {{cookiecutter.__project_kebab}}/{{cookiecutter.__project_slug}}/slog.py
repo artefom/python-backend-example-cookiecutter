@@ -13,7 +13,6 @@ use logging_context or extra=... to add context to logs
 see 'slog_tests.test_structured_logging' for more detailed usage example
 """
 
-
 import contextvars
 import json
 import logging
@@ -126,6 +125,7 @@ class GcpStructuredFormatter(logging.Formatter):
 
         for key, value in record.__dict__.items():
             if value is not None and key not in RESERVED:
-                labels[key] = value
+                # if value is not of type 'string' it will be dropped by google cloud
+                labels[key] = str(value)
 
         return labels

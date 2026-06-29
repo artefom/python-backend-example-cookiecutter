@@ -1,6 +1,7 @@
 """
 common fixtures and classes for tests
 """
+
 import io
 import json
 import logging

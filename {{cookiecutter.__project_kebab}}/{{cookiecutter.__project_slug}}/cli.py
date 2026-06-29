@@ -15,10 +15,10 @@ import typer
 
 logger = logging.getLogger(__name__)
 
-# This app is referenced by [tool.poetry.scripts] in pyproject.toml
+# This app is referenced by [project.scripts] in pyproject.toml
 #
-# When you install the application `poetry install`
-# (to install with lint and tests run `poetry install --with lint,test`)
+# When you install the application `uv sync`
+# (to install with lint and tests run `uv sync --group lint --group test`)
 #
 # It makes the 'script' available in your environment. After that
 # the application can be executed by simply typing in the console

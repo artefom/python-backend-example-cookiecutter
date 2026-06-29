@@ -1,6 +1,7 @@
 """
 Tracking middleware
 """
+
 import asyncio
 import logging
 from dataclasses import dataclass

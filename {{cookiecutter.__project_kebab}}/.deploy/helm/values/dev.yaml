@@ -23,13 +23,13 @@ ingress:
       more_set_headers "Access-Control-Allow-Methods: GET, PUT, POST, DELETE, PATCH, OPTIONS";
       more_set_headers "Access-Control-Allow-Headers: *";
       more_set_headers "Access-Control-Allow-Credentials: true";
-  ingressClassName: nginx-new-internal
+  ingressClassName: nginx-internal
   hosts:
     # The same must be specified in .gitlab-ci.yml as dev url
     - host: svc.playground.internal.distribusion.com
       paths:
         - path: "/{{cookiecutter.__project_kebab}}(/|$)(.*)"
-          type: Prefix
+          type: ImplementationSpecific
 
 resources:
   limits:

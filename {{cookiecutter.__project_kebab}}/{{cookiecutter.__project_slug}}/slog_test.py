@@ -1,6 +1,7 @@
 """
 tests for structured logging module (slog.py)
 """
+
 import asyncio
 import logging
 import time

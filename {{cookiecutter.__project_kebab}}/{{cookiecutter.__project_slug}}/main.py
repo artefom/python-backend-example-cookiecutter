@@ -4,7 +4,6 @@ Server entry-point with FastAPI app defined
 
 import asyncio
 import logging
-import logging.config
 from dataclasses import dataclass
 
 import fastapi
@@ -24,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def make_app(root_path: str) -> FastAPI:
+
     app = FastAPI(root_path=root_path)
 
     app.add_middleware(
