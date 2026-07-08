@@ -19,9 +19,9 @@ ingress:
     ingress.kubernetes.io/force-ssl-redirect: "false"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/configuration-snippet: |
-      more_set_headers "Access-Control-Allow-Origin: http://localhost:8080";
+      more_set_headers "Access-Control-Allow-Origin: $http_origin";
       more_set_headers "Access-Control-Allow-Methods: GET, PUT, POST, DELETE, PATCH, OPTIONS";
-      more_set_headers "Access-Control-Allow-Headers: *";
+      more_set_headers "Access-Control-Allow-Headers: $http_access_control_request_headers";
       more_set_headers "Access-Control-Allow-Credentials: true";
   ingressClassName: nginx-internal
   hosts:
