@@ -2,7 +2,8 @@ FROM python:3.14-slim-trixie
 
 WORKDIR /app
 
-RUN pip install --no-input "uv"
+# Use uploaded-prior-to to reduce the risk of supply chain attacks.
+RUN pip install --no-input --uploaded-prior-to=P14D uv
 
 # Install packages in a cache-friendly way
 COPY uv.lock ./

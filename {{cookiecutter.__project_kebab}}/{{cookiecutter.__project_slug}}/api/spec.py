@@ -10,17 +10,11 @@ import enum
 import inspect
 import logging
 from abc import abstractmethod
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from functools import wraps
 from typing import (
     Any,
-    Callable,
-    Generator,
-    Generic,
-    List,
-    Tuple,
-    Type,
-    TypeVar,
     get_type_hints,
 )
 from uuid import uuid4
@@ -32,13 +26,8 @@ from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T")
 
-
-ErrorVariants = TypeVar("ErrorVariants")
-
-
-class UserError(BaseModel, Generic[ErrorVariants]):
+class UserError[ErrorVariants](BaseModel):
     """
     Error model for all user errors.
     Provides reason of error and details
@@ -61,15 +50,15 @@ async def default_validation_exception_handler(
     )
 
 
-def _create_error_enum(name: str, errors: List[Type[Exception]]):
-    variants = dict()
+def _create_error_enum(name: str, errors: list[type[Exception]]):
+    variants = {}
     for error in errors:
         error_type = error.__name__
         variants[error_type] = error_type
     return enum.Enum(f"{name}_errors", variants, type=str)
 
 
-def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
+def expect_exceptions(func: Callable, exceptions: tuple[type[Exception], ...]):
     """
     Specifies which exceptions can function raise
     Only those exceptions will be handled
@@ -85,7 +74,7 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
                     error=exc.__class__.__name__, detail=str(exc)
                 ).model_dump_json(),
                 headers={"Content-Type": "application/json"},
-                status_code=getattr(exc, "status_code"),
+                status_code=getattr(exc, "status_code"),  # noqa: B009
             )
         # Manually handle here internal server errors
         # Handling the error this way gives more concise stack trace
@@ -105,15 +94,15 @@ def expect_exceptions(func: Callable, exceptions: Tuple[Type[Exception], ...]):
                 status_code=500,
             )
 
-    errors_by_status_code = dict()
+    errors_by_status_code = {}
 
     for exception in exceptions:
-        status_code = getattr(exception, "status_code")
+        status_code = getattr(exception, "status_code")  # noqa: B009
         if status_code not in errors_by_status_code:
-            errors_by_status_code[status_code] = list()
+            errors_by_status_code[status_code] = []
         errors_by_status_code[status_code].append(exception)
 
-    additional_responses = dict()
+    additional_responses = {}
     for status_code, errors in errors_by_status_code.items():
         additional_responses[status_code] = {
             "model": UserError[
@@ -174,7 +163,7 @@ class ApiSection:
         method: str,
         path: str,
         endpoint: Any,
-        *exceptions: Type[Exception],
+        *exceptions: type[Exception],
         deprecated: bool = False,
     ):
         endpoint = expect_exceptions(endpoint, exceptions)
@@ -205,7 +194,7 @@ def make_router(api: Api) -> APIRouter:
     router = APIRouter()
 
     @contextmanager
-    def section(prefix: str, tag: str) -> Generator[ApiSection, None, None]:
+    def section(prefix: str, tag: str) -> Generator[ApiSection]:
         yield ApiSection(router, prefix, tag)
 
     # Add new API routes here

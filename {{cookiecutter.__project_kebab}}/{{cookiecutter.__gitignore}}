@@ -14,6 +14,7 @@ local/
 db.sqlite-shm
 db.sqlite-wal
 .fleet
+.python-version
 
 # Autoenv scripts
 .autoenv.zsh

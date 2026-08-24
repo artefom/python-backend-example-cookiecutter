@@ -64,8 +64,6 @@ def _get_logging_config(level: int, formatter: str):
 @app.callback()
 def global_vars(
     verbose: bool = False,
-    sentry_dsn: str | None = typer.Option(None, envvar="SENTRY_DSN"),
-    sentry_environment: str | None = typer.Option(None, envvar="SENTRY_ENVIRONMENT"),
     formatter: str = typer.Option("standard", envvar="LOG_FORMATTER"),
 ) -> None:
     """
@@ -84,11 +82,7 @@ def global_vars(
     # Configure logging
     logging.config.dictConfig(_get_logging_config(loglevel, formatter))
 
-    # Configure setnry
-    sentry_sdk.init(
-        dsn=sentry_dsn,
-        environment=sentry_environment,
-    )
+    sentry_sdk.init(attach_stacktrace=True)
 
 
 @app.command()

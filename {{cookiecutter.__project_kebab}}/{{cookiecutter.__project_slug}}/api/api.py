@@ -19,6 +19,16 @@ class DefaultApi(spec.Api):
     async def echo(self, request: str) -> spec.EchoResponse:
         if request == "error":
             raise spec.EchoError()
+
+        if request == "exception":
+            raise Exception("This is an unhandled exception")  # noqa: TRY002
+
+        logger.info(
+            "Processing echo request.",
+            # A demonstration of structured logging with extra context.
+            extra={"structuredLoggingContext": {"request": request, "number": 42}},
+        )
+
         return spec.EchoResponse(text=f"{request}")
 
 

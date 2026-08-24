@@ -4,12 +4,13 @@ Tracking middleware
 
 import asyncio
 import logging
+import uuid
 from dataclasses import dataclass
 from functools import cached_property
 
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.datastructures import MutableHeaders
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from uvicorn.protocols import utils as uviutils
 
 from {{cookiecutter.__project_slug}}.slog import logging_context
@@ -42,50 +43,61 @@ class RequestView:
         return f"HTTP/{version}"
 
     @cached_property
-    def request_id(self) -> str | None:
-        return self.headers.get("x-request-id")
+    def request_id(self) -> str:
+        return self.request.headers.get("x-request-id") or str(uuid.uuid4())
 
     @property
     def content_length(self) -> int | None:
         try:
-            content_length = self.headers["Content-Length"]
-            return int(content_length)
+            return int(self.request.headers["content-length"])
         except KeyError:
             return None
 
     @property
     def user_agent(self) -> str | None:
-        return self.headers.get("user-agent")
-
-    @cached_property
-    def headers(self) -> dict:
-        return dict(self.request.headers.items())
+        return self.request.headers.get("user-agent")
 
 
-@dataclass
-class ResponseView:
-    response: Response
+class TrackingMiddleware:
+    """Pure-ASGI middleware that scopes logging context to the request,
+    stamps ``X-Request-ID`` on the response and emits a structured access log.
 
-    @property
-    def content_length(self) -> int | None:
-        try:
-            content_length = self.response.headers["Content-Length"]
-            return int(content_length)
-        except KeyError:
-            return None
+    Implemented as raw ASGI (rather than ``BaseHTTPMiddleware``) to avoid the
+    per-request anyio task-group / memory-stream overhead that
+    ``BaseHTTPMiddleware`` adds to every request.
+    """
 
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
 
-class TrackingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
-        request_view = RequestView(request)
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
 
-        with logging_context(request_id=request_view.request_id):
-            # measure request time
-            start_time = asyncio.get_event_loop().time()
-            response = await call_next(request)
-            end_time = asyncio.get_event_loop().time()
+        request_view = RequestView(Request(scope, receive))
+        request_id = request_view.request_id
 
-            response_view = ResponseView(response)
+        status_code = 0
+        response_size: int | None = None
+
+        async def send_wrapper(message: Message) -> None:
+            nonlocal status_code, response_size
+            if message["type"] == "http.response.start":
+                status_code = message["status"]
+                headers = MutableHeaders(scope=message)
+                headers["X-Request-ID"] = request_id
+                try:
+                    response_size = int(headers["content-length"])
+                except KeyError, ValueError:
+                    response_size = None
+
+            await send(message)
+
+        with logging_context(x_request_id=request_id):
+            start_time = asyncio.get_running_loop().time()
+            await self.app(scope, receive, send_wrapper)
+            end_time = asyncio.get_running_loop().time()
 
             logger.info(
                 "%s %s %s",
@@ -100,11 +112,9 @@ class TrackingMiddleware(BaseHTTPMiddleware):
                         "protocol": request_view.http_version,
                         "userAgent": request_view.user_agent,
                         "requestSize": request_view.content_length,
-                        "responseSize": response_view.content_length,
+                        "responseSize": response_size,
                         "latency": f"{round(end_time - start_time, 6)}s",
-                        "status": response.status_code,
+                        "status": status_code,
                     }
                 },
             )
-
-        return response
