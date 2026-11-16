@@ -22,13 +22,13 @@ dependencies = [
     "typer>=0.27.0,<1",
     "uvicorn>=0.51.0,<1",
     "uvloop>=0.22.1,<1",
-    # Tracing. No exporter is configured (see {{cookiecutter.__project_slug}}/telemetry.py):
-    # spans are created purely so their trace/span ids can be attached to logs.
     "opentelemetry-sdk>=1.29.0,<2",
     "opentelemetry-instrumentation-fastapi>=0.50b0",
-    # Propagates trace context into outbound aiohttp client requests (injects
-    # the W3C traceparent header on every ClientSession call).
     "opentelemetry-instrumentation-aiohttp-client>=0.50b0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.29.0,<2",
+    "google-auth[requests]>=2.30,<3",
+    # To support legacy timezones parsing on modern Docker images
+    "tzdata (>=2026.5,<2027.0)",
 ]
 
 
@@ -45,9 +45,8 @@ test = [
     "pytest-cov>=7.1.0,<8",
 ]
 lint = [
-    "black>=26.5.1",
     "pre-commit>=4.6.1",
-    "pyright>=1.1.411,<2",
+    "pyrefly>=1.4.0,<2",
     "ruff>=0.16.0",
 ]
 
@@ -69,3 +68,9 @@ log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(linen
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "module"
+
+
+[tool.pyrefly]
+project-includes = ["{{cookiecutter.__project_slug}}", "tests", "conftest.py"]
+python-version = "3.14"
+preset = "default"

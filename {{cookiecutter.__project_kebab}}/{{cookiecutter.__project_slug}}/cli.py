@@ -65,14 +65,21 @@ def _get_logging_config(level: int, formatter: str):
 def global_vars(
     verbose: bool = False,
     formatter: str = typer.Option("standard", envvar="LOG_FORMATTER"),
+    environment: str | None = typer.Option(
+        None,
+        envvar="ENVIRONMENT",
+        help="Deployment environment (e.g. production), reported to Sentry and tracing",
+    ),
 ) -> None:
     """
     Hook that sets up
-    global variables such sentry configuration and logging config.
+    global variables such sentry configuration, logging config and tracing.
 
     Will be executed before any other app command
     """
     import sentry_sdk
+
+    from .tracing import TraceSettings, configure
 
     loglevel = logging.INFO
 
@@ -82,7 +89,17 @@ def global_vars(
     # Configure logging
     logging.config.dictConfig(_get_logging_config(loglevel, formatter))
 
-    sentry_sdk.init(attach_stacktrace=True)
+    sentry_sdk.init(attach_stacktrace=True, environment=environment)
+
+    configure(
+        TraceSettings(
+            "{{cookiecutter.__project_kebab}}",
+            environment=environment,
+            otlp_endpoint="https://telemetry.googleapis.com",
+            otlp_headers=None,
+            gcp_project_id="distribusion-next-13",
+        )
+    )
 
 
 @app.command()
@@ -90,7 +107,6 @@ def run(
     host: str = "127.0.0.1",
     port: int = 8000,
     root_path: str = typer.Option("", envvar="API_ROOT_PATH"),
-    # Add here more arguments/environment variables if needed
 ) -> None:
     """
     Run server.
@@ -100,10 +116,4 @@ def run(
 
     from .main import AppSettings, main
 
-    main(
-        AppSettings(
-            host=host,
-            port=port,
-            root_path=root_path,
-        )
-    )
+    main(AppSettings(host=host, port=port, root_path=root_path))

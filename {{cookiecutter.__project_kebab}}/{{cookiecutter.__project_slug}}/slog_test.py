@@ -3,6 +3,7 @@ tests for structured logging module (slog.py)
 """
 
 import asyncio
+import json
 import logging
 import time
 import uuid
@@ -11,7 +12,7 @@ from unittest.mock import ANY
 import pytest
 from opentelemetry.sdk.trace import TracerProvider
 
-from .slog import logging_context
+from .slog import GcpStructuredFormatter, logging_context
 from .testing_utils import JsonLogs
 
 logger = logging.getLogger("test_logger")
@@ -190,17 +191,16 @@ def test_structured_trace_context(structured_logs_capture: JsonLogs):
     assert parsed["logging.googleapis.com/trace_sampled"] is True
 
 
-@pytest.mark.usefixtures("freeze_uuid", "freeze_time")
-def test_structured_trace_context_with_project(
-    structured_logs_capture: JsonLogs, monkeypatch: pytest.MonkeyPatch
-):
-    monkeypatch.setenv("GCP_PROJECT_ID", "my-project")
+def test_structured_trace_context_with_project():
+    formatter = GcpStructuredFormatter(project_id="my-project")
+    record = logger.makeRecord(
+        logger.name, logging.INFO, __file__, 0, "with trace", (), None
+    )
     tracer = TracerProvider().get_tracer("test")
     with tracer.start_as_current_span("test-span") as span:
-        logger.info("with trace")
+        parsed = json.loads(formatter.format(record))
     trace_id = format(span.get_span_context().trace_id, "032x")
 
-    parsed = structured_logs_capture.parse()[0]
     assert parsed["logging.googleapis.com/trace"] == (
         f"projects/my-project/traces/{trace_id}"
     )

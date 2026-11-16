@@ -16,7 +16,6 @@ see 'slog_tests.test_structured_logging' for more detailed usage example
 import contextvars
 import json
 import logging
-import os
 import traceback
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -97,7 +96,7 @@ def _local_timestamp_to_utc(local_unix_timestamp: float) -> str:
     )
 
 
-def _add_trace_context(payload: dict[str, Any]) -> None:
+def _add_trace_context(payload: dict[str, Any], project_id: str | None) -> None:
     """
     Stamp the active OpenTelemetry span onto the log entry using the special
     fields Google Cloud Logging recognises, so all log lines of a single request
@@ -112,16 +111,18 @@ def _add_trace_context(payload: dict[str, Any]) -> None:
         return
 
     trace_id = format(span_context.trace_id, "032x")
-    project = os.environ.get("GCP_PROJECT_ID")
-
     payload["logging.googleapis.com/trace"] = (
-        f"projects/{project}/traces/{trace_id}" if project else trace_id
+        f"projects/{project_id}/traces/{trace_id}" if project_id else trace_id
     )
     payload["logging.googleapis.com/spanId"] = format(span_context.span_id, "016x")
     payload["logging.googleapis.com/trace_sampled"] = span_context.trace_flags.sampled
 
 
 class GcpStructuredFormatter(logging.Formatter):
+    def __init__(self, project_id: str | None = None) -> None:
+        super().__init__()
+        self.project_id = project_id
+
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
             "severity": record.levelname,
@@ -134,7 +135,7 @@ class GcpStructuredFormatter(logging.Formatter):
         }
 
         self._add_context(payload, record)
-        _add_trace_context(payload)
+        _add_trace_context(payload, self.project_id)
 
         if exc_info := record.exc_info:
             payload["traceback"] = "".join(traceback.format_exception(*exc_info))

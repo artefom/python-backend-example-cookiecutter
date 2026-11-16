@@ -14,9 +14,10 @@ ARG GITLAB_REGISTRY_USERNAME
 ARG GITLAB_REGISTRY_PASSWORD
 ENV UV_INDEX_DISTRIBUSION_USERNAME=$GITLAB_REGISTRY_USERNAME
 ENV UV_INDEX_DISTRIBUSION_PASSWORD=$GITLAB_REGISTRY_PASSWORD
+ARG DISTRIBUSION_INDEX=https://gitlab.com/api/v4/groups/15793598/-/packages/pypi/simple
 
 RUN uv export --frozen --no-dev --no-editable --no-emit-project --format requirements.txt --output-file requirements.txt \
-    && uv pip sync --system requirements.txt \
+    && uv pip sync --system --index distribusion=$DISTRIBUSION_INDEX requirements.txt \
     && rm -f requirements.txt
 
 COPY ./{{cookiecutter.__project_slug}} ./{{cookiecutter.__project_slug}}

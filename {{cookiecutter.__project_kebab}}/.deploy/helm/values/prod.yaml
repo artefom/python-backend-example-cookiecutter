@@ -7,7 +7,7 @@ app:
     # Do not copy-paste this value from other projects
     SENTRY_DSN: ""
     LOG_FORMATTER: "json"
-    SENTRY_ENVIRONMENT: "production"
+    ENVIRONMENT: "production"
   
   # To add secret environment variable use
   # TEST_ENV_VAR: ref+vault://gitlab/${CI_PROJECT_PATH}/${CI_ENVIRONMENT_NAME}#/TEST_ENV_VAR
@@ -23,7 +23,7 @@ ingress:
       more_set_headers "Access-Control-Allow-Methods: GET, PUT, POST, DELETE, PATCH, OPTIONS";
       more_set_headers "Access-Control-Allow-Headers: $http_access_control_request_headers";
       more_set_headers "Access-Control-Allow-Credentials: true";
-  ingressClassName: nginx-internal
+  ingressClassName: nginx-new-internal
   hosts:
     # The same must be specified in .gitlab-ci.yml as dev url
     - host: svc.prod.internal.distribusion.com
